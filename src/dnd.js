@@ -23,15 +23,16 @@ import {
  */
 export default class SortByDnd {
     constructor(el, option) {
+        let $el = el
         if (isString(el)) {
-            el = $(el)
+            $el = $(el)
         }
 
-        if (el.nodeType !== 1) {
+        if ($el.nodeType !== 1) {
             throw new TypeError('el is not a selector or element.')
         }
 
-        this.$container = el
+        this.$container = $el
         this.option = assign({}, this.defaults, option)
         this.initArgs()
     }
@@ -331,7 +332,7 @@ export default class SortByDnd {
         let ret = null
         let i = 0
         while (!ret && i < accepts.length) {
-            const { container, element, ignore, rule } = accepts[i]
+            const { container, relative, ignore, rule } = accepts[i]
             i += 1
             const $containers = $$(container, this.$container)
             const $closest = $containers.find($el => {
@@ -341,14 +342,14 @@ export default class SortByDnd {
                     const $ignore = $(ignore, $el)
                     return (!$ignore.childElementCount || !this.intersecting($ignore, true))
                         && this.intersecting($el)
-                } else {
-                    return this.intersecting($el)
                 }
+
+                return this.intersecting($el)
             })
 
             if ($closest) {
-                const $target = $closest.matches(element) ? $closest
-                    : $(element, $closest)
+                const $target = $closest.matches(relative) ? $closest
+                    : $(relative, $closest)
                 ret = { $target, rule }
             }
         }

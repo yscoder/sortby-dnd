@@ -1,7 +1,7 @@
 {
   "name": "sort-by-dnd",
   "description": "Sort by drag-and-drop.",
-  "version": "0.0.1",
+  "version": "0.0.2",
   "author": "yusen <634206017@qq.com>",
   "main": "./dist/sortByDnd.js",
   "scripts": {
@@ -12,6 +12,7 @@
     "autoprefixer": "^6.7.7",
     "babel-core": "^6.24.0",
     "babel-loader": "^6.4.1",
+    "babel-preset-es2015": "^6.24.1",
     "babel-preset-stage-2": "^6.24.1",
     "cross-env": "^3.0.0",
     "css-loader": "^0.28.0",
@@ -20,7 +21,6 @@
     "less": "^2.7.2",
     "less-loader": "^4.0.3",
     "postcss-loader": "^1.3.3",
-    "vue": "^2.2.6",
     "vue-loader": "^11.1.4",
     "vue-style-loader": "^2.0.5",
     "vue-template-compiler": "^2.2.6",
@@ -28,6 +28,7 @@
     "webpack-dev-server": "^2.2.0"
   },
   "dependencies": {
+    "vue": "^2.2.6",
     "highlight.js": "^9.11.0"
   },
   "repository": {
