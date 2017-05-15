@@ -41,6 +41,7 @@ export default class SortByDnd {
         accepts: null,
         draggable: '.item',
         handle: '',
+        ignore: 'input, textarea',
         dragClass: 'drag',
         ghostClass: 'ghost',
         scrollEl: null,
@@ -105,10 +106,11 @@ export default class SortByDnd {
     }
 
     checkDragItem = (target, callback) => {
-        const handle = this.option.handle
-        if (handle && !closest(target, handle)) return
+        const { handle, ignore, draggable } = this.option
+        if (closest(target, ignore)
+            || (handle && !closest(target, handle))) return
 
-        const $dragItem = closest(target, this.option.draggable)
+        const $dragItem = closest(target, draggable)
         if (!$dragItem) return
 
         const index = nodeIndex($dragItem)
@@ -146,9 +148,10 @@ export default class SortByDnd {
     clone(evt) {
         const $dragItem = this.$dragItem
         const $cloneNode = $dragItem.cloneNode(true)
-        const { top, left, width } = $dragItem.getBoundingClientRect()
+        const { top, left, width, bottom } = $dragItem.getBoundingClientRect()
         style($cloneNode, assign(this.cloneStyle, {
             width: $dragItem.style.width || `${width}px`,
+            height: $dragItem.style.height || `${bottom - top}px`,
             transform: `translate(${left}px, ${top}px)`
         }))
         addClass($dragItem, this.option.ghostClass)

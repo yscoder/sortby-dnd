@@ -1,7 +1,7 @@
 {
   "name": "sort-by-dnd",
   "description": "Sort by drag-and-drop.",
-  "version": "0.0.2",
+  "version": "0.0.3",
   "author": "yusen <634206017@qq.com>",
   "main": "./dist/sortByDnd.js",
   "scripts": {
@@ -17,19 +17,17 @@
     "cross-env": "^3.0.0",
     "css-loader": "^0.28.0",
     "extract-text-webpack-plugin": "^2.1.0",
+    "highlight.js": "^9.11.0",
     "file-loader": "^0.9.0",
     "less": "^2.7.2",
     "less-loader": "^4.0.3",
     "postcss-loader": "^1.3.3",
+    "vue": "^2.2.6",
     "vue-loader": "^11.1.4",
     "vue-style-loader": "^2.0.5",
     "vue-template-compiler": "^2.2.6",
     "webpack": "^2.2.0",
     "webpack-dev-server": "^2.2.0"
-  },
-  "dependencies": {
-    "vue": "^2.2.6",
-    "highlight.js": "^9.11.0"
   },
   "repository": {
     "type": "git",
