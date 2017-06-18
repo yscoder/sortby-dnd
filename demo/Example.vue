@@ -1,30 +1,53 @@
 <template>
-    <section class="docs-example">
-        <h2 class="docs-example-title">{{title}}</h2>
-        <div class="docs-card">
-            <div class="docs-example-source">
-                <slot></slot>
-            </div>
-            <pre class="docs-example-code"><code class="javascript" ref="code">// {{comment + '\n'}}new SortByDnd('{{el}}', {{ htmlOption }})</code></pre>
+    <block :title="title">
+        <div class="docs-example-source">
+            <slot></slot>
         </div>
-    </section>
+        <pre class="docs-example-code"><code class="javascript" ref="code">{{formatCode}}</code></pre>
+    </block>
 </template>
 <script>
-import SortByDnd from '../src/dnd'
+import Block from './Block'
+import SortByDnd from 'dnd'
 
 export default {
+    components: {
+        Block
+    },
     props: ['title', 'comment', 'el', 'option'],
     computed: {
-        htmlOption() {
-            return JSON.stringify(this.option)
-                .replace(/\"(\w+)\":/g, ' $1: ')
-                .replace(/\"/g, "'")
-                .replace(/([\,\{\[])/g, "$1\n\t")
-                .replace(/([\}\]])/g, '\n$1')
+        comments () {
+            return Array.isArray(this.comment)
+                ? this.comment.map(str => `// ${str}`).join('\n')
+                : `// ${this.comment}`
+        },
+        preCode () {
+            return Array.isArray(this.option)
+                ? this.option.map((item, i) => `const dnd${i + 1} = new SortByDnd('${this.el}', ${this.stringifyOption(item)})
+                    dnd${i + 1}.bind()
+                `).join('\n')
+                : `const dnd = new SortByDnd('${this.el}', ${this.stringifyOption(this.option)})
+                    dnd.bind()`
+        },
+        formatCode () {
+            return this.$beautifyJs(`
+                ${this.comments}
+                ${this.preCode}
+            `)
         }
     },
-    mounted() {
-        new SortByDnd(this.el, this.option).bind()
+    methods: {
+        stringifyOption (option) {
+            return JSON.stringify(option)
+                .replace(/\"(\w+)\":/g, '$1:')
+                .replace(/\"/g, "'")
+        }
+    },
+    mounted () {
+        Array.isArray(this.option)
+            ? this.option.forEach(item => new SortByDnd(this.el, item).bind())
+            : new SortByDnd(this.el, this.option).bind()
+
         this.$hljs.highlightBlock(this.$refs.code)
     }
 }
@@ -32,13 +55,6 @@ export default {
 <style lang="less">
 .docs- {
     &example {
-        padding: 20px 0;
-
-        &-title {
-            font-size: 24px;
-            font-weight: 500;
-            margin-bottom: 12px;
-        }
 
         &-source {
             padding: 20px;
@@ -55,12 +71,6 @@ export default {
                 color: #666;
             }
         }
-    }
-
-    &card {
-        background: #fff;
-        border: 1px solid #ddd;
-        border-radius: 3px; // box-shadow: 0 0 3px rgba(0, 0, 0, .1)
     }
 }
 </style>

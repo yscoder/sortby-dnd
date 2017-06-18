@@ -36,7 +36,7 @@ export const removeClass = (el, ...classArgs) => el.classList.remove(classArgs)
 // dom operation
 export const insertBefore = (node, beforeNode) => node.insertAdjacentElement('beforebegin', beforeNode)
 export const insertAfter = (node, afterNode) => node.insertAdjacentElement('afterend', afterNode)
-export const prepend = (node, preNode) => node.insertAdjacentElement('beforebegin', preNode)
+export const prepend = (node, preNode) => node.insertAdjacentElement('afterbegin', preNode)
 
 // scrollDirection
 export const scrollDirection = el => {

@@ -81,6 +81,13 @@ export default class SortByDnd {
         APPEND: 'append'
     }
 
+    DIRECTION = {
+        T: 'T',
+        R: 'R',
+        B: 'B',
+        L: 'L'
+    }
+
     initArgs() {
         this.$dragItem = null
         this.$cloneNode = null
@@ -180,22 +187,22 @@ export default class SortByDnd {
         }
 
         const { scrollSpacing, scrollSpeed } = this.option
-        const length = Math.max((scrollSpacing - len) / 20 * scrollSpeed, 1)
+        const length = Math.max((scrollSpacing - len) / 50 * scrollSpeed, 1)
 
         switch (direc) {
-            case 'left':
+            case this.DIRECTION.L:
                 $box.scrollLeft -= length
                 if ($box.scrollLeft === 0) return
                 break
-            case 'right':
+            case this.DIRECTION.R:
                 $box.scrollLeft += length
                 if ($box.scrollLeft === $box.scrollWidth - $box.offsetWidth) return
                 break
-            case 'top':
+            case this.DIRECTION.T:
                 $box.scrollTop -= length
                 if ($box.scrollTop === 0) return
                 break
-            case 'bottom':
+            case this.DIRECTION.B:
                 $box.scrollTop += length
                 if ($box.scrollTop === $box.scrollHeight - $box.offsetHeight) return
                 break
@@ -233,11 +240,11 @@ export default class SortByDnd {
             const lLen = x - left
 
             if (rLen <= len) {
-                this.scrollTo($box, rLen, axis, 'right')
+                this.scrollTo($box, rLen, axis, this.DIRECTION.R)
             }
 
             if (lLen <= len) {
-                this.scrollTo($box, lLen, axis, 'left')
+                this.scrollTo($box, lLen, axis, this.DIRECTION.L)
             }
             return
         }
@@ -247,20 +254,16 @@ export default class SortByDnd {
             const bLen = bottom - y
 
             if (tLen <= len) {
-                this.scrollTo($box, tLen, axis, 'top')
+                this.scrollTo($box, tLen, axis, this.DIRECTION.T)
             }
 
             if (bLen <= len) {
-                this.scrollTo($box, bLen, axis, 'bottom')
+                this.scrollTo($box, bLen, axis, this.DIRECTION.B)
             }
         }
     }
 
     onMove = evt => {
-        if (this.$container.contains(evt.target)) {
-            prevent(evt)
-        }
-
         const { clientX, clientY } = evt
         if (this.moving || this.cancel || !this.$dragItem
             || (this.startPost.x === clientX && this.startPost.y === clientY)) return
@@ -340,20 +343,13 @@ export default class SortByDnd {
             const $containers = $$(container, this.$container)
             const $closest = $containers.find($el => {
                 if ($el.contains(this.$dragItem)) return false
-
-                if (ignore) {
-                    const $ignore = $(ignore, $el)
-                    return (!$ignore.childElementCount || !this.intersecting($ignore, true))
-                        && this.intersecting($el)
-                }
-
                 return this.intersecting($el)
             })
 
             if ($closest) {
                 const $target = $closest.matches(relative) ? $closest
                     : $(relative, $closest)
-                ret = { $target, rule }
+                ret = ignore && closest($target, ignore) ? null : { $target, rule }
             }
         }
         return ret
@@ -368,13 +364,12 @@ export default class SortByDnd {
         })
     }
 
-    intersecting($to, flag) {
+    intersecting($to) {
         const {
             left: l1,
             top: t1,
             right: r1,
             bottom: b1,
-            width
         } = this.$cloneNode.getBoundingClientRect()
         const {
             left: l2,
@@ -383,26 +378,49 @@ export default class SortByDnd {
             bottom: b2
         } = $to.getBoundingClientRect()
 
+        // 没有交集
         if (l1 > r2 || r1 < l2 || b1 < t2 || t1 > b2) return false
-        if (flag) return true  // true: 有交集, false: 继续判断交集面积
 
-        const height = b1 - t1
-        const l = Math.max(l1, l2)
-        const t = Math.max(t1, t2)
-        const r = Math.min(r1, r2)
-        const b = Math.min(b1, b2)
+        const {
+            left,
+            top,
+            right,
+            bottom
+        } = this.$dragItem.getBoundingClientRect()
 
-        // 交集大于拖拽节点面积二分之一
-        return Math.round((r - l) * (b - t)) > Math.round(width * height / 2)
+        // 方位判断
+        const ot = b2 <= top
+        const or = l2 >= right
+        const ob = t2 >= bottom
+        const ol = r2 <= left
+
+        // 目标中心点
+        const cx = l2 + Math.round((r2 - l2) / 2)
+        const cy = t2 + Math.round((b2 - t2) / 2)
+
+        // 上左
+        if (ot && ol) return t1 < cy && l1 < cx
+        // 上右
+        if (ot && or) return t1 < cy && r1 > cx
+        // 下右
+        if (ob && or) return b1 > cy && r1 > cx
+        // 下左
+        if (ob && ol) return b1 > cy && l1 < cx
+        // 上
+        if (ot) return t1 < cy
+        // 右
+        if (or) return r1 > cx
+        // 下
+        if (ob) return b1 > cy
+        // 左
+        if (ol) return l1 < cx
+        return false
     }
 
     moveDraggable = $overItem => {
         const index = nodeIndex(this.$dragItem)
-        if (this.toIndex <= index) {
-            this.moveItem($overItem, this.MOVE_RULE.BEFORE)
-        } else {
-            this.moveItem($overItem, this.MOVE_RULE.AFTER)
-        }
+        this.moveItem($overItem,
+            this.toIndex <= index ? this.MOVE_RULE.BEFORE : this.MOVE_RULE.AFTER)
     }
 
     moveItem($target, rule = this.MOVE_RULE.APPEND) {
