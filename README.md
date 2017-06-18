@@ -51,7 +51,7 @@ export default {
             //    // ...option1
             // }, {
             //     // ...option2
-            //// }],
+            // }],
         }
     }
 }
