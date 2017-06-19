@@ -3,7 +3,7 @@ import { assign } from './util'
 
 let config = {}
 
-// suport object && array
+// support object and array
 const bind = (el, option = {}) => {
     if (Array.isArray(option)) {
         return option.map(optItem => bind(el, optItem))

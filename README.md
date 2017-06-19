@@ -29,6 +29,11 @@ import SortByDnd from 'sort-by-dnd/dist/vueSortByDnd'
 
 // use directive
 Vue.use(SortByDnd)
+
+// use directive and setting global option
+Vue.use(SortByDnd, {
+    // ...option
+})
 ```
 
 ```html
@@ -63,7 +68,7 @@ export default {
 ```js
 // defaults
 {
-    accepts: null,
+    accepts: null,   // [{ container: DomSelector,  relative: DomSelector, ignore: DomSelector, rule: MoveRule }, ...]
     draggable: '.item',
     handle: '',
     ignore: 'input, textarea',
@@ -72,11 +77,31 @@ export default {
     scrollEl: null,
     scrollSpacing: 80,
     scrollSpeed: 4,
-    onDrag: null,
-    onClone: null,
-    onMove: null,
-    onOver: null,
-    onDrop: null,
-    onEnd: null
+    onDrag(DndEvent, MouseEvent) { },
+    onClone(DndEvent, MouseEvent) { },
+    onMove(DndEvent, MouseEvent) { },
+    onOver(DndEvent, MouseEvent, MoveRule) { },
+    onDrop(DndEvent, MoveRule) { },
+    onEnd(DndEvent, MouseEvent) { }
+}
+```
+
+### MoveRule
+
+* `prepend`
+* `before`
+* `after`
+* `append`
+
+### DndEvent
+
+```js
+{
+    item: Element,      // drag element
+    from: Element,      // from container
+    fromIndex: Number,  // from index
+    to: Element,        // to container
+    toIndex: Number,    // to index
+    clone: Element      // clone element
 }
 ```
