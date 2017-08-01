@@ -1,3 +1,11 @@
+if (!Element.prototype.matches) {
+    Element.prototype.matches = Element.prototype.matchesSelector
+        || Element.prototype.mozMatchesSelector
+        || Element.prototype.msMatchesSelector
+        || Element.prototype.oMatchesSelector
+        || Element.prototype.webkitMatchesSelector
+}
+
 // closest
 export const closest = (el, selector) => {
     let element = el

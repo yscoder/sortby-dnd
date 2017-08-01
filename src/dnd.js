@@ -7,7 +7,6 @@ import {
     closest,
     nodeIndex,
     style,
-    prevent,
     addClass,
     removeClass,
     insertBefore,
@@ -42,8 +41,10 @@ export default class SortByDnd {
         draggable: '.item',
         handle: '',
         ignore: 'input, textarea',
+        pullIn: null,
         dragClass: 'drag',
         ghostClass: 'ghost',
+        deviation: 2,   // 允许鼠标一定数值的偏差不认为是拖拽
         scrollEl: null,
         scrollSpacing: 80,
         scrollSpeed: 4,
@@ -52,7 +53,8 @@ export default class SortByDnd {
         onMove: null,
         onOver: null,
         onDrop: null,
-        onEnd: null
+        onEnd: null,
+        onCancel: null
     }
 
     $dragItem = null
@@ -114,6 +116,7 @@ export default class SortByDnd {
 
     checkDragItem = (target, callback) => {
         const { handle, ignore, draggable } = this.option
+
         if (closest(target, ignore)
             || (handle && !closest(target, handle))) return
 
@@ -133,6 +136,7 @@ export default class SortByDnd {
 
         this.cancel = false
         this.checkDragItem(target, $dragItem => {
+
             this.startPost = { x, y }
             this.$dragItem = $dragItem
             this.$from = $dragItem.parentNode
@@ -142,7 +146,10 @@ export default class SortByDnd {
 
     onMouseUp = evt => {
         this.cancel = true
-        if (!this.startPost) return
+        if (!this.startPost) {
+            this.emit('onCancel', evt)
+            return
+        }
 
         removeClass(this.$dragItem, this.option.ghostClass)
         if (this.$cloneNode) {
@@ -263,10 +270,17 @@ export default class SortByDnd {
         }
     }
 
+    isNotTrigger(x2, y2) {
+        const { x, y } = this.startPost
+        const dvi = this.option.deviation
+        return !this.$cloneNode
+            && Math.abs(x - x2) <= dvi && Math.abs(y - y2) <= dvi
+    }
+
     onMove = evt => {
         const { clientX, clientY } = evt
         if (this.moving || this.cancel || !this.$dragItem
-            || (this.startPost.x === clientX && this.startPost.y === clientY)) return
+            || this.isNotTrigger(clientX, clientY)) return
 
         this.moving = true
 
@@ -358,8 +372,11 @@ export default class SortByDnd {
     getClosestItem() {
         const $dragList = $$(this.option.draggable, this.$container)
 
+        const pullIn = this.option.pullIn
+
         return $dragList.find($dragEl => {
-            if ($dragEl === this.$dragItem) return false
+            if ($dragEl === this.$dragItem
+                || (pullIn && !closest($dragEl, pullIn))) return false
             return this.intersecting($dragEl)
         })
     }
@@ -443,15 +460,13 @@ export default class SortByDnd {
     }
 
     bind() {
-        on(this.$container, 'dragstart', prevent)
-        on(this.$container, 'mousedown', this.onMouseDown)
+        on(this.$container, 'mousedown', this.onMouseDown, false)
         on(document, 'mouseup', this.onMouseUp)
         on(document, 'mousemove', this.onMove)
     }
 
     destroy() {
-        off(this.$container, 'dragstart', prevent)
-        off(this.$container, 'mousedown', this.onMouseDown)
+        off(this.$container, 'mousedown', this.onMouseDown, false)
         off(document, 'mouseup', this.onMouseUp)
         off(document, 'mousemove', this.onMove)
     }
